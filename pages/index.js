@@ -5,7 +5,8 @@
 // 2. Se funcionar → salva em data/resultados.json
 // 3. Se falhar → lê do arquivo JSON (último resultado conhecido)
 
-import { useState, useEffect } from "react";
+import fs from "fs";
+import path from "path";
 
 // ---------------------------------------------------------------------------
 // Componente: Bola
@@ -204,20 +205,9 @@ function CardSorteio({ tipo, dados }) {
 // Página principal
 // ---------------------------------------------------------------------------
 export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
-  const [tempoAtual, setTempoAtual] = useState("");
-
-  useEffect(() => {
-    if (geradoEm) {
-      const d = new Date(geradoEm);
-      setTempoAtual(d.toLocaleString("pt-BR"));
-    }
-  }, [geradoEm]);
-
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -309,7 +299,7 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              SORTE
+              CAIXA
             </span>
           </h1>
 
@@ -348,8 +338,10 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
             </span>
           </div>
 
-          {tempoAtual && (
+          {/* ✅ CORRIGIDO: data formatada no servidor, sem useState/useEffect */}
+          {geradoEm && (
             <div
+              suppressHydrationWarning
               style={{
                 marginTop: 8,
                 fontFamily: "'DM Mono', monospace",
@@ -357,7 +349,7 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
                 color: "rgba(255,255,255,0.2)",
               }}
             >
-              última busca: {tempoAtual}
+              última busca: {geradoEm}
             </div>
           )}
         </div>
@@ -397,9 +389,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
 // ---------------------------------------------------------------------------
 // getStaticProps com cache local em JSON
 // ---------------------------------------------------------------------------
-
-import fs from "fs";
-import path from "path";
 
 const CACHE_FILE = path.join(process.cwd(), "data", "resultados.json");
 
@@ -466,13 +455,23 @@ async function buscarResultado(jogo) {
 }
 
 export async function getStaticProps() {
-  let fonte = "api"; // Identifica se os dados vieram da API ou do cache
+  let fonte = "api";
 
   // Tenta buscar da API
   const [lotofacil, lotomania] = await Promise.all([
     buscarResultado("lotofacil"),
     buscarResultado("lotomania"),
   ]);
+
+  // ✅ CORRIGIDO: formatação manual para evitar divergência Node vs Browser
+  function formatarData(date) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return (
+      `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ` +
+      `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+    );
+  }
+  const geradoEm = formatarData(new Date());
 
   // Se conseguiu buscar ambos, salva no cache
   if (lotofacil && lotomania) {
@@ -489,10 +488,10 @@ export async function getStaticProps() {
         props: {
           lotofacil: cache.lotofacil || null,
           lotomania: cache.lotomania || null,
-          geradoEm: new Date().toISOString(),
+          geradoEm,
           fonte,
         },
-        revalidate: 21600, // 6 horas
+        revalidate: 21600,
       };
     }
 
@@ -503,7 +502,7 @@ export async function getStaticProps() {
     props: {
       lotofacil: lotofacil || null,
       lotomania: lotomania || null,
-      geradoEm: new Date().toISOString(),
+      geradoEm,
       fonte,
     },
     revalidate: 21600,
