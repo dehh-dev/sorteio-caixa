@@ -1,209 +1,6 @@
-// pages/index.js
-//
-// Sistema com fallback:
-// 1. Tenta buscar da API da Caixa
-// 2. Se funcionar → salva em data/resultados.json
-// 3. Se falhar → lê do arquivo JSON (último resultado conhecido)
+import { LotteryController } from "../controllers/LotteryController.js";
+import { CardSorteio } from "../views/CardSorteio.js";
 
-import fs from "fs";
-import path from "path";
-
-// ---------------------------------------------------------------------------
-// Componente: Bola
-// ---------------------------------------------------------------------------
-function Bola({ numero, cor, cor2, glow, delay }) {
-  const label = String(numero).padStart(2, "0");
-  return (
-    <div
-      style={{
-        width: 52,
-        height: 52,
-        borderRadius: "50%",
-        background: `radial-gradient(circle at 36% 34%, ${cor2}, ${cor} 72%)`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "'Oswald', sans-serif",
-        fontWeight: 700,
-        fontSize: 20,
-        color: "#fff",
-        boxShadow: `${glow}, inset 0 2px 6px rgba(255,255,255,0.22)`,
-        animation: `popIn 0.4s ease both`,
-        animationDelay: delay,
-        userSelect: "none",
-        flexShrink: 0,
-      }}
-    >
-      {label}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Cores por jogo
-// ---------------------------------------------------------------------------
-const CORES = {
-  lotofacil: {
-    bola: "#9B30FF",
-    bola2: "#C77DFF",
-    border: "rgba(155,48,255,0.45)",
-    glow: "0 0 18px 4px rgba(155,48,255,0.35)",
-    badge: "#9B30FF",
-  },
-  lotomania: {
-    bola: "#FF6B00",
-    bola2: "#FFA040",
-    border: "rgba(255,107,0,0.45)",
-    glow: "0 0 18px 4px rgba(255,107,0,0.35)",
-    badge: "#FF6B00",
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Componente: Card do Sorteio
-// ---------------------------------------------------------------------------
-function CardSorteio({ tipo, dados }) {
-  const c = CORES[tipo];
-  const titulo = tipo === "lotofacil" ? "Lotofácil" : "Lotomania";
-  const icone = tipo === "lotofacil" ? "🍀" : "🎲";
-
-  if (!dados) {
-    return (
-      <div
-        style={{
-          background: "rgba(18,18,28,0.85)",
-          border: `1.5px solid ${c.border}`,
-          borderRadius: 20,
-          padding: "32px 36px",
-          width: "100%",
-          maxWidth: 640,
-          textAlign: "center",
-          color: "rgba(255,255,255,0.3)",
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 13,
-        }}
-      >
-        {icone} {titulo} — sem sorteio disponível
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        background: "rgba(18,18,28,0.85)",
-        border: `1.5px solid ${c.border}`,
-        borderRadius: 20,
-        padding: "32px 36px 28px",
-        boxShadow: `0 8px 48px rgba(0,0,0,0.5), ${c.glow}`,
-        backdropFilter: "blur(16px)",
-        width: "100%",
-        maxWidth: 640,
-      }}
-    >
-      {/* Cabeçalho */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 20,
-          flexWrap: "wrap",
-          gap: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 32 }}>{icone}</span>
-          <div>
-            <div
-              style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontSize: 26,
-                fontWeight: 700,
-                color: "#fff",
-                letterSpacing: 1,
-              }}
-            >
-              {titulo}
-            </div>
-            <div
-              style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.45)",
-                marginTop: 1,
-              }}
-            >
-              Concurso #{dados.concurso}
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            background: c.badge,
-            borderRadius: 8,
-            padding: "5px 13px",
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 12,
-            color: "#fff",
-            letterSpacing: 1,
-            opacity: 0.92,
-          }}
-        >
-          {dados.data}
-        </div>
-      </div>
-
-      {/* Divisor */}
-      <div
-        style={{
-          height: 1,
-          background: c.border,
-          marginBottom: 24,
-          opacity: 0.5,
-        }}
-      />
-
-      {/* Bolas */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          justifyContent: "center",
-        }}
-      >
-        {dados.numeros.map((n, i) => (
-          <Bola
-            key={`${n}-${i}`}
-            numero={n}
-            cor={c.bola}
-            cor2={c.bola2}
-            glow={c.glow}
-            delay={`${i * 60}ms`}
-          />
-        ))}
-      </div>
-
-      {/* Rodapé */}
-      <div
-        style={{
-          marginTop: 22,
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 12,
-          color: "rgba(255,255,255,0.3)",
-          textAlign: "center",
-        }}
-      >
-        {dados.numeros.length} números sorteados
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Página principal
-// ---------------------------------------------------------------------------
 export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
   return (
     <>
@@ -233,7 +30,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
         }
       `}</style>
 
-      {/* Fundo com gradiente */}
       <div
         style={{
           position: "fixed",
@@ -254,7 +50,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
         }}
       />
 
-      {/* Conteúdo */}
       <main
         style={{
           position: "relative",
@@ -267,7 +62,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
           animation: "floatUp 0.7s ease both",
         }}
       >
-        {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 52 }}>
           <div
             style={{
@@ -338,7 +132,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
             </span>
           </div>
 
-          {/* ✅ CORRIGIDO: data formatada no servidor, sem useState/useEffect */}
           {geradoEm && (
             <div
               suppressHydrationWarning
@@ -354,7 +147,6 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
           )}
         </div>
 
-        {/* Cards */}
         <div
           style={{
             display: "flex",
@@ -386,101 +178,19 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// getStaticProps com cache local em JSON
-// ---------------------------------------------------------------------------
-
-const CACHE_FILE = path.join(process.cwd(), "data", "resultados.json");
-
-// Garante que o diretório data/ existe
-function garantirDiretorio() {
-  const dir = path.dirname(CACHE_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-// Lê o cache local
-function lerCache() {
-  try {
-    if (fs.existsSync(CACHE_FILE)) {
-      const conteudo = fs.readFileSync(CACHE_FILE, "utf-8");
-      return JSON.parse(conteudo);
-    }
-  } catch (err) {
-    console.error("[CACHE] Erro ao ler cache:", err.message);
-  }
-  return null;
-}
-
-// Salva resultados no cache
-function salvarCache(dados) {
-  try {
-    garantirDiretorio();
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(dados, null, 2), "utf-8");
-    console.log("[CACHE] Resultados salvos com sucesso");
-  } catch (err) {
-    console.error("[CACHE] Erro ao salvar cache:", err.message);
-  }
-}
-
-// Busca resultado da API da Caixa
-async function buscarResultado(jogo) {
-  try {
-    const url = `https://servicebus2.caixa.gov.br/portaldeloterias/api/${jogo}`;
-    const res = await fetch(url, {
-      headers: {
-        Referer: "https://loterias.caixa.gov.br/",
-        "User-Agent": "Mozilla/5.0",
-      },
-    });
-
-    if (!res.ok) {
-      console.error(`[API] ${jogo} retornou status ${res.status}`);
-      return null;
-    }
-
-    const json = await res.json();
-    const numeros = (json.listaDezenas || []).map((n) => parseInt(n, 10));
-
-    return {
-      data: json.dataApuracao || "",
-      concurso: json.numero || 0,
-      numeros,
-    };
-  } catch (err) {
-    console.error(`[API] Erro ao buscar ${jogo}:`, err.message);
-    return null;
-  }
-}
-
 export async function getStaticProps() {
   let fonte = "api";
 
-  // Tenta buscar da API
-  const [lotofacil, lotomania] = await Promise.all([
-    buscarResultado("lotofacil"),
-    buscarResultado("lotomania"),
-  ]);
+  const { lotofacil, lotomania } = await LotteryController.fetchAllResults();
 
-  // ✅ CORRIGIDO: formatação manual para evitar divergência Node vs Browser
-  function formatarData(date) {
-    const pad = (n) => String(n).padStart(2, "0");
-    return (
-      `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ` +
-      `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-    );
-  }
-  const geradoEm = formatarData(new Date());
+  const geradoEm = LotteryController.formatarData(new Date());
 
-  // Se conseguiu buscar ambos, salva no cache
   if (lotofacil && lotomania) {
-    salvarCache({ lotofacil, lotomania });
+    LotteryController.saveCache(lotofacil, lotomania);
     console.log("[ISR] Dados atualizados da API");
   } else {
-    // Se algum falhou, tenta ler do cache
     console.log("[ISR] API falhou, lendo do cache...");
-    const cache = lerCache();
+    const cache = LotteryController.getCache();
 
     if (cache) {
       fonte = "cache";
@@ -500,8 +210,8 @@ export async function getStaticProps() {
 
   return {
     props: {
-      lotofacil: lotofacil || null,
-      lotomania: lotomania || null,
+      lotofacil: lotofacil?.toJSON() || null,
+      lotomania: lotomania?.toJSON() || null,
       geradoEm,
       fonte,
     },
