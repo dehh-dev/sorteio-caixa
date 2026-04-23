@@ -147,19 +147,19 @@ export default function Home({ lotofacil, lotomania, geradoEm, fonte }) {
           )}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 32,
-            width: "100%",
-            maxWidth: 680,
-            alignItems: "center",
-          }}
-        >
-          <CardSorteio tipo="lotofacil" dados={lotofacil} />
-          <CardSorteio tipo="lotomania" dados={lotomania} />
-        </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 32,
+              width: "100%",
+              maxWidth: 680,
+              alignItems: "center",
+            }}
+          >
+            {lotofacil && <CardSorteio tipo="lotofacil" dados={lotofacil} />}
+            {lotomania && <CardSorteio tipo="lotomania" dados={lotomania} />}
+          </div>
 
         <div
           style={{
