@@ -40,7 +40,12 @@ describe("CacheManager", () => {
 
   describe("write", () => {
     it("creates directory if it does not exist", () => {
-      const nestedPath = path.join(process.cwd(), "data", "nested", "test.json");
+      const nestedPath = path.join(
+        process.cwd(),
+        "data",
+        "nested",
+        "test.json"
+      );
       const nestedManager = new CacheManager(nestedPath);
 
       nestedManager.write({ test: "data" });

@@ -28,7 +28,11 @@ export class CacheManager {
   write(data) {
     try {
       this.ensureDirectory();
-      fs.writeFileSync(this.cacheFilePath, JSON.stringify(data, null, 2), "utf-8");
+      fs.writeFileSync(
+        this.cacheFilePath,
+        JSON.stringify(data, null, 2),
+        "utf-8"
+      );
       console.log("[CACHE] Resultados salvos com sucesso");
     } catch (err) {
       console.error("[CACHE] Erro ao salvar cache:", err.message);

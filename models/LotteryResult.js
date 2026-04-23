@@ -7,7 +7,11 @@ export class LotteryResult {
 
   static fromApi(json) {
     const numeros = (json.listaDezenas || []).map((n) => parseInt(n, 10));
-    return new LotteryResult(json.dataApuracao || "", json.numero || 0, numeros);
+    return new LotteryResult(
+      json.dataApuracao || "",
+      json.numero || 0,
+      numeros
+    );
   }
 
   static fromCache(data) {
